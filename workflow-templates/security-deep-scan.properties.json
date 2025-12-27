@@ -1,0 +1,5 @@
+{
+  "name": "Security - Weekly Deep Scan",
+  "description": "Weekly deep security scan with TruffleHog and Gitleaks",
+  "iconName": "shield"
+}
