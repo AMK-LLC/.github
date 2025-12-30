@@ -1,0 +1,55 @@
+name: ?? Reusable SonarQube
+
+on:
+  workflow_call:
+    inputs:
+      project-key:
+        description: 'SonarQube project key'
+        required: true
+        type: string
+      project-name:
+        description: 'SonarQube project name'
+        required: true
+        type: string
+      sources:
+        description: 'Source directories'
+        required: false
+        type: string
+        default: '.'
+      exclusions:
+        description: 'Files to exclude'
+        required: false
+        type: string
+        default: '**/node_modules/**,**/dist/**,**/.next/**,**/coverage/**'
+    secrets:
+      SONAR_TOKEN:
+        required: true
+      SONAR_HOST_URL:
+        required: true
+
+jobs:
+  sonarqube:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ inputs.project-key }}
+            -Dsonar.projectName=${{ inputs.project-name }}
+            -Dsonar.sources=${{ inputs.sources }}
+            -Dsonar.exclusions=${{ inputs.exclusions }}
+
+      - name: SonarQube Quality Gate
+        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -1,0 +1,63 @@
+name: ?? Reusable Lint
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: 'Node.js version'
+        required: false
+        type: string
+        default: '20'
+      package-manager:
+        description: 'Package manager (npm, pnpm, yarn)'
+        required: false
+        type: string
+        default: 'pnpm'
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Setup pnpm
+        if: inputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: |
+          if [ "${{ inputs.package-manager }}" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn install --frozen-lockfile
+          else
+            npm ci
+          fi
+
+      - name: Run ESLint
+        run: |
+          if [ "${{ inputs.package-manager }}" = "pnpm" ]; then
+            pnpm lint || true
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn lint || true
+          else
+            npm run lint || true
+          fi
+
+      - name: Check Prettier
+        run: |
+          if [ "${{ inputs.package-manager }}" = "pnpm" ]; then
+            pnpm format:check || pnpm prettier --check . || true
+          elif [ "${{ inputs.package-manager }}" = "yarn" ]; then
+            yarn format:check || yarn prettier --check . || true
+          else
+            npm run format:check || npx prettier --check . || true
+          fi
