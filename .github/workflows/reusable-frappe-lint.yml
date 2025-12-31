@@ -1,0 +1,61 @@
+name: Frappe Lint
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version'
+        required: false
+        default: '3.11'
+        type: string
+
+jobs:
+  python-lint:
+    name: Python Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Linter
+        run: ruff check . --output-format=github
+
+      - name: Run Ruff Formatter Check
+        run: ruff format . --check
+
+  js-lint:
+    name: JavaScript Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for JS files
+        id: check-js
+        run: |
+          if find . -name "*.js" -not -path "./node_modules/*" | grep -q .; then
+            echo "has_js=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_js=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install ESLint
+        if: steps.check-js.outputs.has_js == 'true'
+        run: npm install -g eslint
+
+      - name: Run ESLint
+        if: steps.check-js.outputs.has_js == 'true'
+        run: eslint . --ext .js --ignore-pattern node_modules/ --ignore-pattern dist/ || true
