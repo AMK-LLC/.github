@@ -1,0 +1,26 @@
+name: CI
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  commitlint:
+    uses: AMK-LLC/.github/.github/workflows/reusable-commitlint.yml@main
+
+  gitleaks:
+    uses: AMK-LLC/.github/.github/workflows/reusable-gitleaks.yml@main
+
+  frappe-lint:
+    uses: AMK-LLC/.github/.github/workflows/reusable-frappe-lint.yml@main
+
+  sonarqube:
+    uses: AMK-LLC/.github/.github/workflows/reusable-sonarqube.yml@main
+    with:
+      project-key: ${{ github.event.repository.name }}
+      project-name: ${{ github.event.repository.name }}
+      exclusions: '**/node_modules/**,**/__pycache__/**,**/site-packages/**'
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}

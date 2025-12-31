@@ -1,0 +1,10 @@
+name: Dependabot Auto Merge
+on:
+  pull_request_target:
+
+jobs:
+  automerge:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: AMK-LLC/.github/.github/workflows/reusable-dependabot-automerge.yml@main

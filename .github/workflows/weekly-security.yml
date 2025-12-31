@@ -1,0 +1,9 @@
+name: Weekly Security Scan
+on:
+  schedule:
+    - cron: '0 2 * * 6'
+  workflow_dispatch:
+
+jobs:
+  deep-security:
+    uses: AMK-LLC/.github/.github/workflows/reusable-deep-security.yml@main
